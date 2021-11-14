@@ -57,8 +57,6 @@ def get_min_dist(point, points=rdata, dist_func=cityblock):  # calculates distan
     return distances.idxmin()
 
 
-centers = rdata  # storing random start centers
-counter = 0
 
 while True:
     counter += 1
@@ -67,11 +65,6 @@ while True:
     new_centers = data.groupby('nearest').mean()
     dist = ((new_centers - centers) ** 2).sum().sum()
     centers = new_centers
-
-    plt.scatter(data.loc[:, "X"], data.loc[:, "Y"], c=data.nearest)  # plots each data object as data point
-    plt.scatter(centers.loc[:, "X"], centers.loc[:, "Y"], color='red')
-    plt.title("Iteration: " + str(counter))
-    plt.show()
 
     if dist == 0:
         break
@@ -84,25 +77,23 @@ plt.scatter(centers.loc[:, "X"], centers.loc[:, "Y"], color='red')
 plt.title("data + optimized centers")
 plt.show()
 
+
+# the result varies with different random centers  for exemple if 2 of them are very close or if they are in a local minimum position where they get "stuck"
+# it might lead to a more stable result if the process gets repeated several times and then again the means are taken
+
 with open('output.csv', 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(n_clusters)  # number of centers
-    for i in range(n_clusters[0]):
-        writer.writerow([centers.loc[i, "X"], centers.loc[i, "Y"]])  # list of seeds
-    writer.writerow([counter])  # number of iterations
-    for i in range(len(data)):
-        writer.writerow([data.nearest[i], data.loc[i, "X"], data.loc[i, "Y"]])  # data entries (rows, columns)
-
-# The number of iterations is the number of steps until
-# the cluster centers do not change their position anymore.
-
-# https://stackoverflow.com/questions/6253729/kmeans-with-l1-distance-in-python
+    writer.writerow([n_clusters]) # number of centers
 
 
-# print(cluster.cluster_centers_)
+    for i, (x,y) in rdata.round(8).iterrows():  # list of seeds
+        writer.writerow((x,y))
 
-# print(cluster.labels_)
+    writer.writerow([counter]) # number of iterations
+    writer.writerow(data.shape) # data entries (rows, columns)
 
-# plt.scatter(data.loc[:, "X"], data.loc[:, "Y"], c=cluster.labels_)
-# plt.scatter(cluster.cluster_centers_[:, 0], cluster.cluster_centers_[:, 1], color='black')
-# plt.show()
+    for i, row in data[["nearest", "X", "Y"]].round(8).iterrows(): # list of data with corresponding center
+        num_list = row.tolist()
+        num_list[0] = int(num_list[0])
+        writer.writerow(num_list)
+
