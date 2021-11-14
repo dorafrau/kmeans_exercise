@@ -1,4 +1,3 @@
-
 import random
 
 import numpy as np
@@ -21,7 +20,7 @@ for i, line in enumerate(file):
 
 # ------------ assign read information to variables ----------
 
-n_clusters = int(lines[0].strip(';'))   # assign 1st row of file to variable
+n_clusters = [int(lines[0].strip(';'))]  # assign 1st row of file to variable
 [rows, columns] = lines[1].split(';')  # assign 2nd row of file to variables
 rows = int(rows)
 columns = int(columns)
@@ -32,7 +31,6 @@ data = pd.read_csv('input.csv', sep=';', decimal=',', skiprows=2, header=None,
                    encoding='utf8')  # each row is data object of 2 domensions(columns)
 data.columns = ["X", "Y"]
 
-
 # -------------- create random centers ------------------
 
 min_X = min(data.loc[:, "X"])
@@ -42,29 +40,30 @@ max_Y = max(data.loc[:, "Y"])
 
 x_draw = np.random.uniform(min_X, max_X, n_clusters)
 y_draw = np.random.uniform(min_Y, max_Y, n_clusters)
-rdata = pd.DataFrame({"X": x_draw, "Y": y_draw}) # assigns random centers to DataFrame
+rdata = pd.DataFrame({"X": x_draw, "Y": y_draw})  # assigns random centers to DataFrame
 
 plt.scatter(data.loc[:, "X"], data.loc[:, "Y"])  # plots each data object as data point
 plt.scatter(rdata.loc[:, "X"], rdata.loc[:, "Y"])
 plt.title("data + random centers")
 plt.show()
 
+
 # ------------ k means calculation ---------------------------
 
-def get_min_dist(point, points=rdata, dist_func=cityblock): # calculates distances using manhattan distance (citiblock)
-    distances = points.apply(lambda x: dist_func(point, x) ,axis=1)
+def get_min_dist(point, points=rdata, dist_func=cityblock):  # calculates distances using manhattan distance (citiblock)
+    distances = points.apply(lambda x: dist_func(point, x), axis=1)
     return distances.idxmin()
 
-centers = rdata # storing random start centers
-counter = 0
 
+centers = rdata  # storing random start centers
+counter = 0
 
 while True:
     counter += 1
     data["nearest"] = data[["X", "Y"]].apply(lambda x: get_min_dist(x, points=centers), axis=1)
 
     new_centers = data.groupby('nearest').mean()
-    dist = ((new_centers - centers)**2).sum().sum()
+    dist = ((new_centers - centers) ** 2).sum().sum()
     centers = new_centers
 
     plt.scatter(data.loc[:, "X"], data.loc[:, "Y"], c=data.nearest)  # plots each data object as data point
@@ -75,8 +74,6 @@ while True:
     if dist == 0:
         break
 
-
-
 print("Iterations: " + str(counter))
 print('Centers: ', centers)
 
@@ -85,35 +82,14 @@ plt.scatter(centers.loc[:, "X"], centers.loc[:, "Y"], color='red')
 plt.title("data + optimized centers")
 plt.show()
 
-
-"""
-with open('output.cvs', 'w') as file:
+with open('output.csv', 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(n_clusters) # number of centers
-    writer.writerow() # list of seeds
-    writer.writerow() # number of iterations
-    writer.writerow() # data entries (rows, columns)
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    writer.writerow(n_clusters)  # number of centers
+    for i in range(n_clusters[0]):
+        writer.writerow([centers.loc[i, "X"], centers.loc[i, "Y"]])  # list of seeds
+    writer.writerow([counter])  # number of iterations
+    for i in range(len(data)):
+        writer.writerow([data.nearest, data.loc[i, "X"], data.loc[i, "Y"]])  # data entries (rows, columns)
 
 # The number of iterations is the number of steps until
 # the cluster centers do not change their position anymore.
