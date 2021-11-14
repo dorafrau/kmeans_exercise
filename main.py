@@ -1,3 +1,5 @@
+# Frauscher Dora, Chromy Aaron
+
 import random
 
 import numpy as np
@@ -89,7 +91,7 @@ with open('output.csv', 'w', newline='') as file:
         writer.writerow([centers.loc[i, "X"], centers.loc[i, "Y"]])  # list of seeds
     writer.writerow([counter])  # number of iterations
     for i in range(len(data)):
-        writer.writerow([data.nearest, data.loc[i, "X"], data.loc[i, "Y"]])  # data entries (rows, columns)
+        writer.writerow([data.nearest[i], data.loc[i, "X"], data.loc[i, "Y"]])  # data entries (rows, columns)
 
 # The number of iterations is the number of steps until
 # the cluster centers do not change their position anymore.
