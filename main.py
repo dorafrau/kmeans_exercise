@@ -1,4 +1,5 @@
-# Dora Frauscher, Aaron Chromy
+# Frauscher Dora, Chromy Aaron
+
 import random
 
 import numpy as np
@@ -21,7 +22,7 @@ for i, line in enumerate(file):
 
 # ------------ assign read information to variables ----------
 
-n_clusters = int(lines[0].strip(';'))   # assign 1st row of file to variable
+n_clusters = [int(lines[0].strip(';'))]  # assign 1st row of file to variable
 [rows, columns] = lines[1].split(';')  # assign 2nd row of file to variables
 rows = int(rows)
 columns = int(columns)
@@ -32,7 +33,6 @@ data = pd.read_csv('input.csv', sep=';', decimal=',', skiprows=2, header=None,
                    encoding='utf8')  # each row is data object of 2 domensions(columns)
 data.columns = ["X", "Y"]
 
-
 # -------------- create random centers ------------------
 
 min_X = min(data.loc[:, "X"])
@@ -42,34 +42,32 @@ max_Y = max(data.loc[:, "Y"])
 
 x_draw = np.random.uniform(min_X, max_X, n_clusters)
 y_draw = np.random.uniform(min_Y, max_Y, n_clusters)
-rdata = pd.DataFrame({"X": x_draw, "Y": y_draw}) # assigns random centers to DataFrame
+rdata = pd.DataFrame({"X": x_draw, "Y": y_draw})  # assigns random centers to DataFrame
 
 plt.scatter(data.loc[:, "X"], data.loc[:, "Y"])  # plots each data object as data point
 plt.scatter(rdata.loc[:, "X"], rdata.loc[:, "Y"])
 plt.title("data + random centers")
 plt.show()
 
+
 # ------------ k means calculation ---------------------------
 
-def get_min_dist(point, points=rdata, dist_func=cityblock): # calculates distances using manhattan distance (citiblock)
-    distances = points.apply(lambda x: dist_func(point, x) ,axis=1)
+def get_min_dist(point, points=rdata, dist_func=cityblock):  # calculates distances using manhattan distance (citiblock)
+    distances = points.apply(lambda x: dist_func(point, x), axis=1)
     return distances.idxmin()
 
-centers = rdata # storing random start centers
-counter = 0
+
 
 while True:
     counter += 1
     data["nearest"] = data[["X", "Y"]].apply(lambda x: get_min_dist(x, points=centers), axis=1)
 
     new_centers = data.groupby('nearest').mean()
-    dist = ((new_centers - centers)**2).sum().sum()
+    dist = ((new_centers - centers) ** 2).sum().sum()
     centers = new_centers
 
     if dist == 0:
         break
-
-
 
 print("Iterations: " + str(counter))
 print('Centers: ', centers)
@@ -79,12 +77,14 @@ plt.scatter(centers.loc[:, "X"], centers.loc[:, "Y"], color='red')
 plt.title("data + optimized centers")
 plt.show()
 
+
 # the result varies with different random centers  for exemple if 2 of them are very close or if they are in a local minimum position where they get "stuck"
 # it might lead to a more stable result if the process gets repeated several times and then again the means are taken
 
 with open('output.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow([n_clusters]) # number of centers
+
 
     for i, (x,y) in rdata.round(8).iterrows():  # list of seeds
         writer.writerow((x,y))
